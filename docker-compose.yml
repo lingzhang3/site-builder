@@ -1,0 +1,46 @@
+# Two separate Postgres instances, deliberately:
+#   - app_db   : the platform's own metadata database (Drizzle owns its schema)
+#   - demo_db  : stands in for a CUSTOMER database. The app only ever reads it,
+#                through a readonly role, so local development exercises the
+#                same read-only path production uses.
+services:
+  app_db:
+    image: postgres:16-alpine
+    container_name: site_builder_app_db
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: site_builder
+    ports:
+      - "5433:5432"
+    volumes:
+      - app_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d site_builder"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  demo_db:
+    image: postgres:16-alpine
+    container_name: site_builder_demo_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: demo_saas
+    ports:
+      - "5434:5432"
+    volumes:
+      - demo_db_data:/var/lib/postgresql/data
+      # Runs once on first boot: creates the sample SaaS tables and a
+      # readonly role for the app to connect with.
+      - ./docker/demo-db-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d demo_saas"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  app_db_data:
+  demo_db_data:

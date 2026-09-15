@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+/*
+ * One neutral palette defined as tokens, redefined once for dark mode. Every
+ * component reads the tokens, so the whole app switches theme in one place and
+ * no component hardcodes a hex value.
+ */
+@theme {
+  --color-canvas: oklch(98.5% 0.002 260);
+  --color-surface: oklch(100% 0 0);
+  --color-surface-muted: oklch(96.8% 0.003 260);
+  --color-border: oklch(90.5% 0.005 260);
+  --color-border-strong: oklch(83% 0.008 260);
+  --color-ink: oklch(21% 0.012 260);
+  --color-ink-muted: oklch(48% 0.012 260);
+  --color-ink-subtle: oklch(62% 0.01 260);
+
+  --color-accent: oklch(52% 0.17 258);
+  --color-accent-hover: oklch(46% 0.17 258);
+  --color-accent-soft: oklch(95% 0.03 258);
+  --color-accent-ink: oklch(100% 0 0);
+
+  --color-danger: oklch(54% 0.19 25);
+  --color-danger-soft: oklch(95.5% 0.03 25);
+  --color-warning: oklch(64% 0.14 75);
+  --color-warning-soft: oklch(96% 0.04 85);
+  --color-success: oklch(55% 0.13 155);
+  --color-success-soft: oklch(95.5% 0.04 155);
+
+  --radius-card: 0.75rem;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  /*
+   * Dark mode follows the OS but can be forced with data-theme on <html>,
+   * so the two selectors below both have to redefine every token that changes.
+   */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --color-canvas: oklch(17% 0.008 260);
+      --color-surface: oklch(21% 0.01 260);
+      --color-surface-muted: oklch(25% 0.011 260);
+      --color-border: oklch(30% 0.012 260);
+      --color-border-strong: oklch(38% 0.014 260);
+      --color-ink: oklch(96% 0.003 260);
+      --color-ink-muted: oklch(72% 0.01 260);
+      --color-ink-subtle: oklch(58% 0.011 260);
+
+      --color-accent: oklch(68% 0.15 258);
+      --color-accent-hover: oklch(74% 0.15 258);
+      --color-accent-soft: oklch(28% 0.05 258);
+      --color-accent-ink: oklch(17% 0.01 260);
+
+      --color-danger: oklch(70% 0.16 25);
+      --color-danger-soft: oklch(28% 0.06 25);
+      --color-warning: oklch(78% 0.13 80);
+      --color-warning-soft: oklch(29% 0.05 80);
+      --color-success: oklch(72% 0.13 155);
+      --color-success-soft: oklch(27% 0.05 155);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --color-canvas: oklch(17% 0.008 260);
+    --color-surface: oklch(21% 0.01 260);
+    --color-surface-muted: oklch(25% 0.011 260);
+    --color-border: oklch(30% 0.012 260);
+    --color-border-strong: oklch(38% 0.014 260);
+    --color-ink: oklch(96% 0.003 260);
+    --color-ink-muted: oklch(72% 0.01 260);
+    --color-ink-subtle: oklch(58% 0.011 260);
+
+    --color-accent: oklch(68% 0.15 258);
+    --color-accent-hover: oklch(74% 0.15 258);
+    --color-accent-soft: oklch(28% 0.05 258);
+    --color-accent-ink: oklch(17% 0.01 260);
+
+    --color-danger: oklch(70% 0.16 25);
+    --color-danger-soft: oklch(28% 0.06 25);
+    --color-warning: oklch(78% 0.13 80);
+    --color-warning-soft: oklch(29% 0.05 80);
+    --color-success: oklch(72% 0.13 155);
+    --color-success-soft: oklch(27% 0.05 155);
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Focus ring that is visible on both themes and never removed. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* react-grid-layout's stylesheet, inlined so the package's CSS import (which
+   Turbopack handles differently between dev and build) is not needed. */
+@layer components {
+  .react-grid-layout {
+    position: relative;
+    transition: height 200ms ease;
+  }
+  .react-grid-item {
+    transition: all 200ms ease;
+    transition-property: left, top, width, height;
+  }
+  .react-grid-item.cssTransforms {
+    transition-property: transform, width, height;
+  }
+  .react-grid-item.resizing,
+  .react-grid-item.react-draggable-dragging {
+    z-index: 3;
+    transition: none;
+    will-change: transform;
+  }
+  .react-grid-item.react-grid-placeholder {
+    background: var(--color-accent);
+    opacity: 0.18;
+    border-radius: var(--radius-card);
+    transition-duration: 100ms;
+    z-index: 2;
+    user-select: none;
+  }
+  .react-grid-item > .react-resizable-handle {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    bottom: 0;
+    right: 0;
+    cursor: se-resize;
+  }
+  .react-grid-item > .react-resizable-handle::after {
+    content: "";
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid var(--color-ink-subtle);
+    border-bottom: 2px solid var(--color-ink-subtle);
+  }
+}
