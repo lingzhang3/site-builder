@@ -4,7 +4,7 @@ import { and, eq, gte, sql as sqlExpr } from "drizzle-orm";
 
 import { db } from "@/db";
 import { connections, datasets, queryRuns, type Connection } from "@/db/schema";
-import { DIALECTS, getConnector } from "@/lib/connectors";
+import { getConnector, getDialect } from "@/lib/connectors";
 import type { ConnectionCredentials, QueryResult } from "@/lib/connectors/types";
 import { decryptJson } from "@/lib/crypto";
 import { describeMysqlError } from "@/lib/connectors/mysql";
@@ -55,7 +55,7 @@ export interface RunQueryFailure {
 export async function runQuery(args: RunQueryArgs): Promise<RunQueryOutcome | RunQueryFailure> {
   const { orgId, connection, sql, datasetId, publicationId } = args;
   const limits = getQueryLimits();
-  const dialect = DIALECTS[connection.type];
+  const dialect = getDialect(connection.type);
 
   // 1. Reject obvious writes early, with a message that names the problem.
   try {

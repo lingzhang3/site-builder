@@ -27,6 +27,23 @@
   --color-success: oklch(55% 0.13 155);
   --color-success-soft: oklch(95.5% 0.04 155);
 
+  /*
+   * Categorical series colors. This exact ordering is the colorblind-safety
+   * mechanism, not a style choice — see src/lib/widgets/palette.ts, which is
+   * the source of truth these values are kept in sync with, and the validator
+   * command documented there.
+   */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+  --color-series-3: #1baf7a;
+  --color-series-4: #eda100;
+  --color-series-5: #e87ba4;
+  --color-series-6: #008300;
+  --color-series-7: #4a3aa7;
+  --color-series-8: #e34948;
+  /* De-emphasis gray for the folded "Other" bucket. */
+  --color-series-other: oklch(72% 0.01 260);
+
   --radius-card: 0.75rem;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
 }
@@ -63,6 +80,17 @@
       --color-warning-soft: oklch(29% 0.05 80);
       --color-success: oklch(72% 0.13 155);
       --color-success-soft: oklch(27% 0.05 155);
+
+      /* Same eight hues, stepped for the dark surface. */
+      --color-series-1: #3987e5;
+      --color-series-2: #d95926;
+      --color-series-3: #199e70;
+      --color-series-4: #c98500;
+      --color-series-5: #d55181;
+      --color-series-6: #008300;
+      --color-series-7: #9085e9;
+      --color-series-8: #e66767;
+      --color-series-other: oklch(56% 0.012 260);
     }
   }
 
@@ -88,6 +116,16 @@
     --color-warning-soft: oklch(29% 0.05 80);
     --color-success: oklch(72% 0.13 155);
     --color-success-soft: oklch(27% 0.05 155);
+
+    --color-series-1: #3987e5;
+    --color-series-2: #d95926;
+    --color-series-3: #199e70;
+    --color-series-4: #c98500;
+    --color-series-5: #d55181;
+    --color-series-6: #008300;
+    --color-series-7: #9085e9;
+    --color-series-8: #e66767;
+    --color-series-other: oklch(56% 0.012 260);
   }
 
   body {

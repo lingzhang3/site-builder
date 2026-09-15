@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { BlockedHostError, assertHostAllowed, isBlockedAddress } from "./host-guard.ts";
+import { BlockedHostError, assertHostAllowed, isBlockedAddress } from "./host-guard";
 
 describe("isBlockedAddress", () => {
   it("blocks loopback", () => {

@@ -6,7 +6,7 @@ import {
   getPublicRateLimitPerMinute,
   getQueryLimits,
   parsePositiveInt,
-} from "./limits.ts";
+} from "./limits";
 
 describe("parsePositiveInt", () => {
   it("accepts a valid value", () => {

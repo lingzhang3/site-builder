@@ -116,6 +116,14 @@ export async function requireEditorById(orgId: string): Promise<OrgContext> {
   return context;
 }
 
+export async function requireOwnerBySlug(slug: string): Promise<OrgContext> {
+  const context = await requireOrgBySlug(slug);
+  if (!canAdminister(context.role)) {
+    throw new ForbiddenError("You need owner access to do that.");
+  }
+  return context;
+}
+
 export async function requireOwnerById(orgId: string): Promise<OrgContext> {
   const context = await requireOrgById(orgId);
   if (!canAdminister(context.role)) {

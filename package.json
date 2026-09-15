@@ -15,10 +15,10 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "node --env-file=.env src/db/seed.ts",
-    "test": "node --test \"src/**/*.test.ts\"",
-    "test:unit": "node --test \"src/lib/**/*.test.ts\"",
-    "test:e2e": "playwright test"
+    "db:seed": "node --import ./scripts/resolve-paths.mjs --env-file=.env src/db/seed.ts",
+    "test": "node --import ./scripts/resolve-paths.mjs --test \"src/**/*.test.ts\"",
+    "test:e2e": "playwright test",
+    "test:watch": "node --import ./scripts/resolve-paths.mjs --test --watch \"src/**/*.test.ts\""
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.7.4",

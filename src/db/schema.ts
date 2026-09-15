@@ -182,7 +182,16 @@ export const dashboards = pgTable(
   (t) => [uniqueIndex("dashboards_org_slug_idx").on(t.orgId, t.slug)],
 );
 
-export const widgetTypeEnum = pgEnum("widget_type", ["kpi", "line", "bar", "pie", "table", "text"]);
+// "share" is a 100% stacked bar, not a pie: part-to-whole reads reliably as a
+// stacked bar, while a pie makes close values impossible to compare.
+export const widgetTypeEnum = pgEnum("widget_type", [
+  "kpi",
+  "line",
+  "bar",
+  "share",
+  "table",
+  "text",
+]);
 
 export const widgets = pgTable(
   "widgets",

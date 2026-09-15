@@ -7,7 +7,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import type { MemberRole } from "../db/schema.ts";
+import type { MemberRole } from "../db/schema";
 
 // Re-declared rather than imported: rbac.ts pulls in `server-only`, next/navigation
 // and the database client, none of which load under a bare `node --test`.

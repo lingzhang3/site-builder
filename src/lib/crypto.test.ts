@@ -14,7 +14,7 @@ import {
   hashPassword,
   resetEncryptionKeyCache,
   verifyPassword,
-} from "./crypto.ts";
+} from "./crypto";
 
 const KEY = randomBytes(32);
 const OTHER_KEY = randomBytes(32);

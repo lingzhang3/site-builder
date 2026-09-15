@@ -29,13 +29,13 @@ export const WIDGET_TYPE_LABELS: Record<WidgetType, string> = {
   kpi: "KPI",
   line: "Line chart",
   bar: "Bar chart",
-  pie: "Pie chart",
+  share: "Share of total",
   table: "Table",
   text: "Text",
 };
 
 /** Widget types that render a dataset and therefore need one assigned. */
-export const DATA_WIDGET_TYPES: WidgetType[] = ["kpi", "line", "bar", "pie", "table"];
+export const DATA_WIDGET_TYPES: WidgetType[] = ["kpi", "line", "bar", "share", "table"];
 
 export function isDataWidget(type: WidgetType): boolean {
   return DATA_WIDGET_TYPES.includes(type);
@@ -48,7 +48,7 @@ export function defaultConfigFor(type: WidgetType): WidgetConfig {
     case "line":
     case "bar":
       return { measures: [], format: { style: "compact" }, showLegend: true };
-    case "pie":
+    case "share":
       return { measures: [], format: { style: "compact" } };
     case "table":
       return { columns: [] };

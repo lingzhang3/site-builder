@@ -9,7 +9,7 @@ import {
   wrapWithRowLimit,
   type GuardFailureCode,
   type SqlDialect,
-} from "./guard.ts";
+} from "./guard";
 
 function expectOk(sql: string, dialect: SqlDialect = "postgres") {
   const result = checkReadOnlySelect(sql, dialect);

@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { applyRowLimit, normalizeRows, normalizeValue } from "./normalize.ts";
-import type { QueryColumn } from "./types.ts";
+import { applyRowLimit, normalizeRows, normalizeValue } from "./normalize";
+import type { QueryColumn } from "./types";
 
 describe("normalizeValue", () => {
   it("passes through null and undefined as null", () => {
