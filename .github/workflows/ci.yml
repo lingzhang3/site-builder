@@ -1,0 +1,142 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same branch makes an in-flight run obsolete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The app throws on a missing DATABASE_URL, and `next build` imports server
+  # modules while collecting page data, so the build needs one even though it
+  # never connects. These are throwaway values for CI only.
+  DATABASE_URL: postgres://app:app@localhost:5433/site_builder
+  DEMO_DATABASE_URL: postgres://readonly:readonly@localhost:5434/demo_saas
+  AUTH_URL: http://localhost:3100
+  AUTH_TRUST_HOST: "true"
+  # The demo database is on localhost, which the SSRF guard blocks by design.
+  ALLOW_PRIVATE_DB_HOSTS: "true"
+
+jobs:
+  check:
+    name: Typecheck, lint, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          # Matches the engines field: the test runner and the seed script run
+          # TypeScript through Node directly, which needs 22.18+.
+          node-version: 22
+          # No `cache: pnpm` yet — it keys off pnpm-lock.yaml, which is not
+          # committed. Add it together with the lockfile.
+
+      - name: Generate throwaway secrets
+        run: |
+          echo "AUTH_SECRET=$(node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))")" >> "$GITHUB_ENV"
+          echo "APP_ENCRYPTION_KEY=$(node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))")" >> "$GITHUB_ENV"
+
+      # No pnpm-lock.yaml is committed yet, so the lockfile cannot be enforced
+      # on this first run. Once the lockfile from the artifact below is
+      # committed, change this to `pnpm install --frozen-lockfile`.
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      # Lets the lockfile this run resolves be committed, which is awkward to
+      # produce on a machine that cannot reach the npm registry.
+      - name: Upload the resolved lockfile
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-lock
+          path: pnpm-lock.yaml
+          if-no-files-found: warn
+
+      # Every step below runs even if an earlier one failed, so one run reports
+      # every problem instead of stopping at the first.
+      - name: Unit tests
+        if: ${{ !cancelled() }}
+        run: pnpm test
+
+      - name: Typecheck
+        if: ${{ !cancelled() }}
+        run: pnpm typecheck
+
+      - name: Lint
+        if: ${{ !cancelled() }}
+        run: pnpm lint
+
+      - name: Build
+        if: ${{ !cancelled() }}
+        run: pnpm build
+
+  e2e:
+    name: End-to-end
+    runs-on: ubuntu-latest
+    # Only worth the minutes once the app is known to build.
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate throwaway secrets
+        run: |
+          echo "AUTH_SECRET=$(node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))")" >> "$GITHUB_ENV"
+          echo "APP_ENCRYPTION_KEY=$(node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))")" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      # docker compose rather than `services:` so CI uses the same two
+      # databases developers do, including the demo database's init SQL and its
+      # readonly role. --wait blocks until both healthchecks pass.
+      - name: Start databases
+        run: docker compose up -d --wait
+
+      - name: Apply the app schema
+        # --force because drizzle.config.ts sets strict mode, which otherwise
+        # waits for an interactive confirmation.
+        run: pnpm exec drizzle-kit push --force
+
+      # Exercises the seed path (credential encryption included) and gives the
+      # E2E run a workspace that is not the one it creates for itself.
+      - name: Seed demo data
+        run: pnpm db:seed
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright
+        run: pnpm test:e2e
+
+      - name: Upload the Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Database logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail 200
