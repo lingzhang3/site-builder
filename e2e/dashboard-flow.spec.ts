@@ -21,6 +21,8 @@ function unique(prefix: string): string {
 }
 
 test("sign up, connect a database, build a dashboard, publish it", async ({ page, browser }) => {
+  // One sequential journey through every step, each hitting a real database.
+  test.setTimeout(180_000);
   const workspace = unique("e2e");
   const email = `${workspace}@example.com`;
 
@@ -37,7 +39,8 @@ test("sign up, connect a database, build a dashboard, publish it", async ({ page
 
   /* --- connect the demo database ----------------------------------------- */
 
-  await page.getByRole("link", { name: "Connections" }).click();
+  const nav = page.getByRole("navigation", { name: "Sections" });
+  await nav.getByRole("link", { name: "Connections" }).click();
   await page.getByRole("button", { name: "Add connection" }).click();
 
   await page.getByLabel("Name").fill("Demo DB");
@@ -58,7 +61,7 @@ test("sign up, connect a database, build a dashboard, publish it", async ({ page
 
   /* --- write a dataset ---------------------------------------------------- */
 
-  await page.getByRole("link", { name: "Datasets" }).click();
+  await nav.getByRole("link", { name: "Datasets" }).click();
   await page.getByRole("link", { name: "New dataset" }).click();
   await page.getByLabel("Name").fill("Revenue by plan");
   await page.getByRole("button", { name: /Create and write the query/ }).click();
@@ -87,7 +90,7 @@ test("sign up, connect a database, build a dashboard, publish it", async ({ page
 
   /* --- build a dashboard -------------------------------------------------- */
 
-  await page.getByRole("link", { name: "Dashboards" }).click();
+  await nav.getByRole("link", { name: "Dashboards" }).click();
   await page.getByRole("button", { name: "New dashboard" }).click();
   await page.getByLabel("Name").fill("Revenue overview");
   await page.getByRole("button", { name: "Create", exact: true }).click();
@@ -102,7 +105,8 @@ test("sign up, connect a database, build a dashboard, publish it", async ({ page
 
   /* --- publish and view anonymously -------------------------------------- */
 
-  await page.getByRole("button", { name: "Share" }).click();
+  // exact: "Share" would also match the palette's "Share of total" button.
+  await page.getByRole("button", { name: "Share", exact: true }).click();
   await page.getByRole("button", { name: "Create link" }).click();
 
   const linkInput = page.locator('input[readonly]');
@@ -121,8 +125,10 @@ test("sign up, connect a database, build a dashboard, publish it", async ({ page
 
   // The published payload must not carry the SQL or the connection details.
   const html = await anonymousPage.content();
+  // Column and table names could only appear here if the SQL leaked...
   expect(html).not.toContain("mrr_cents");
-  expect(html).not.toContain("readonly");
+  expect(html).not.toContain("subscriptions");
+  // ...and the port only if the connection details did.
   expect(html).not.toContain("5434");
 
   /* --- revoking breaks the link ------------------------------------------ */

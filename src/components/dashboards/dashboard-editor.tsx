@@ -25,7 +25,12 @@ import {
   reconcileLayout,
   type DashboardLayout,
 } from "@/lib/dashboards/types";
-import { WIDGET_TYPE_LABELS, defaultSizeFor, type WidgetConfig } from "@/lib/widgets/types";
+import {
+  WIDGET_TYPE_LABELS,
+  defaultConfigFor,
+  defaultSizeFor,
+  type WidgetConfig,
+} from "@/lib/widgets/types";
 
 const ResponsiveGrid = WidthProvider(Responsive);
 
@@ -138,7 +143,9 @@ export function DashboardEditor({
         type,
         title: "",
         datasetId: null,
-        config: {},
+        // Must match what addWidgetAction stored, or the first edit would
+        // overwrite the server's defaults with an empty config.
+        config: defaultConfigFor(type),
       };
       setWidgets((current) => [...current, widget]);
       setSelectedId(widget.id);

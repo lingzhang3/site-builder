@@ -15,7 +15,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: 1,
-  reporter: process.env.CI ? "github" : "list",
+  // In CI: "list" for the readable transcript, "github" for inline
+  // annotations, and "json" so a failure can be summarized in a few lines
+  // rather than hunted for in the middle of a long log.
+  reporter: process.env.CI
+    ? [["list"], ["github"], ["json", { outputFile: "playwright-report/results.json" }]]
+    : "list",
   timeout: 60_000,
   expect: { timeout: 15_000 },
 
