@@ -67,13 +67,10 @@ export default async function DatasetsPage({
       ) : rows.length === 0 ? (
         <EmptyState
           title="No datasets yet"
-          description="Write a query once, then reuse it across as many widgets as you like."
-          action={
-            editable ? (
-              <Link href={`/${orgSlug}/datasets/new`}>
-                <Button variant="primary">New dataset</Button>
-              </Link>
-            ) : undefined
+          description={
+            editable
+              ? "Use “New dataset” above. Write a query once, then reuse it across as many widgets as you like."
+              : "An editor on your team can create one."
           }
         />
       ) : (

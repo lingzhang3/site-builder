@@ -19,6 +19,16 @@ import {
 const KEY = randomBytes(32);
 const OTHER_KEY = randomBytes(32);
 
+/**
+ * Flips the first byte, so the payload stays valid base64 but no longer
+ * matches its auth tag. Indexed reads are `number | undefined` under
+ * noUncheckedIndexedAccess, hence the `?? 0` rather than an assertion.
+ */
+function corruptFirstByte(buffer: Buffer): Buffer {
+  buffer[0] = (buffer[0] ?? 0) ^ 0xff;
+  return buffer;
+}
+
 describe("encryptSecret / decryptSecret", () => {
   it("round-trips a value", () => {
     const secret = "super-secret-database-password";
@@ -51,16 +61,14 @@ describe("encryptSecret / decryptSecret", () => {
   it("rejects a tampered ciphertext rather than returning garbage", () => {
     const payload = encryptSecret("password", KEY);
     const parts = payload.split(":");
-    const data = Buffer.from(parts[3]!, "base64");
-    data[0] ^= 0xff;
+    const data = corruptFirstByte(Buffer.from(parts[3]!, "base64"));
     parts[3] = data.toString("base64");
     assert.throws(() => decryptSecret(parts.join(":"), KEY), DecryptionError);
   });
 
   it("rejects a tampered auth tag", () => {
     const parts = encryptSecret("password", KEY).split(":");
-    const tag = Buffer.from(parts[2]!, "base64");
-    tag[0] ^= 0xff;
+    const tag = corruptFirstByte(Buffer.from(parts[2]!, "base64"));
     parts[2] = tag.toString("base64");
     assert.throws(() => decryptSecret(parts.join(":"), KEY), DecryptionError);
   });

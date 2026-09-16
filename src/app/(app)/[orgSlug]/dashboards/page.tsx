@@ -41,14 +41,19 @@ export default async function DashboardsPage({
             Arrange widgets on a grid, then share a read-only link.
           </p>
         </div>
+        {/* Kept out of the empty state below, whose subtree is unmounted as
+            soon as the first dashboard exists. */}
         {editable ? <NewDashboardForm orgSlug={orgSlug} /> : null}
       </div>
 
       {rows.length === 0 ? (
         <EmptyState
           title="No dashboards yet"
-          description="Create one, drop in a few widgets, and point them at your datasets."
-          action={editable ? <NewDashboardForm orgSlug={orgSlug} /> : undefined}
+          description={
+            editable
+              ? "Use “New dashboard” above, then drop in widgets and point them at your datasets."
+              : "An editor on your team can create one."
+          }
         />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

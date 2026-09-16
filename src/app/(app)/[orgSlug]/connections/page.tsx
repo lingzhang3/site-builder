@@ -50,14 +50,21 @@ export default async function ConnectionsPage({
             Read-only links to the databases behind your SaaS tools.
           </p>
         </div>
+        {/* The one place this action lives. Keeping it out of the empty state
+            below is deliberate: that subtree is unmounted the moment the first
+            connection is saved, which would tear down the open modal and the
+            success message inside it. */}
         {editable ? <AddConnectionButton orgSlug={orgSlug} /> : null}
       </div>
 
       {rows.length === 0 ? (
         <EmptyState
           title="No connections yet"
-          description="Add a PostgreSQL or MySQL database and we will read from it to build your dashboards."
-          action={editable ? <AddConnectionButton orgSlug={orgSlug} /> : undefined}
+          description={
+            editable
+              ? "Use “Add connection” above. We connect read-only, so give us a database user that cannot modify data."
+              : "An editor on your team can connect a database."
+          }
         />
       ) : (
         <div className="space-y-3">
