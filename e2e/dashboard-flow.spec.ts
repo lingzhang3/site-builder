@@ -57,7 +57,13 @@ test("sign up, connect a database, build a dashboard, publish it", async ({ page
   // credential encrypt -> store -> decrypt -> connect path works.
   await expect(page.getByText(/Connected to PostgreSQL/)).toBeVisible();
   await page.getByRole("button", { name: "Done" }).click();
-  await expect(page.getByText("Demo DB")).toBeVisible();
+
+  // Role + exact, not getByText: a closed <dialog> keeps its content in the
+  // DOM and getByText does not filter by visibility, so a plain "Demo DB"
+  // also matches the row's hidden delete-confirmation dialog ("Delete Demo
+  // DB?"). Any assertion on a name that a confirmation dialog repeats needs
+  // to be this specific.
+  await expect(page.getByRole("heading", { name: "Demo DB", exact: true })).toBeVisible();
 
   /* --- write a dataset ---------------------------------------------------- */
 
