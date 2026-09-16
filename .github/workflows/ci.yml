@@ -126,12 +126,26 @@ jobs:
       - name: Run Playwright
         run: pnpm test:e2e
 
-      # Prints each failure's title, location and error in a few lines. The
-      # step order matters: this needs to be the last thing in the log, or a
-      # verbose step after it buries the one thing worth reading.
+      - name: Upload the Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # Deliberately the LAST step in the job. Everything above it — Postgres
+      # startup chatter, the artifact upload's progress output, post-job
+      # cleanup — is verbose enough to push this off the end of a fetched log
+      # tail, which is exactly what happened on the first two E2E runs. The
+      # marker lines make it greppable.
       - name: Summarize Playwright failures
         if: failure()
         run: |
+          echo "vvvvvv PLAYWRIGHT FAILURE SUMMARY vvvvvv"
           node -e '
             const fs = require("node:fs");
             const path = "playwright-report/results.json";
@@ -145,13 +159,10 @@ jobs:
                 for (const test of spec.tests ?? []) {
                   for (const result of test.results ?? []) {
                     if (result.status === "passed" || result.status === "skipped") continue;
-                    console.log("=".repeat(70));
                     console.log("FAILED:", [...trail, spec.title].join(" > "));
-                    console.log("at:", spec.file + ":" + spec.line);
-                    console.log("status:", result.status);
+                    console.log("at:", spec.file + ":" + spec.line, "| status:", result.status);
                     for (const e of result.errors ?? []) {
-                      console.log("-".repeat(70));
-                      console.log((e.message ?? "").split("\n").slice(0, 40).join("\n"));
+                      console.log((e.message ?? "").split("\n").slice(0, 30).join("\n"));
                     }
                   }
                 }
@@ -160,21 +171,4 @@ jobs:
             };
             for (const suite of report.suites ?? []) walk(suite, [suite.title]);
           '
-
-      # Short on purpose: 200 lines of Postgres startup chatter buried the
-      # actual Playwright error on the first run.
-      - name: Database logs on failure
-        if: failure()
-        run: docker compose logs --no-color --tail 15
-
-      - name: Upload the Playwright report
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: |
-            playwright-report/
-            test-results/
-          retention-days: 7
-          if-no-files-found: ignore
-
+          echo "^^^^^^ PLAYWRIGHT FAILURE SUMMARY ^^^^^^"
