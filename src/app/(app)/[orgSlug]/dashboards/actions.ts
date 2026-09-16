@@ -25,6 +25,7 @@ import {
 } from "@/lib/rbac";
 import { dedupeSlug, toSafeSlug } from "@/lib/slug";
 import type { DashboardLayout } from "@/lib/dashboards/types";
+import { widgetConfigSchema } from "@/lib/widgets/config-schema";
 import { defaultConfigFor, isDataWidget, type WidgetConfig } from "@/lib/widgets/types";
 
 export interface DashboardFormState {
@@ -151,7 +152,10 @@ export async function addWidgetAction(
 const updateWidgetSchema = z.object({
   title: z.string().max(200),
   datasetId: z.string().uuid().nullable(),
-  config: z.custom<WidgetConfig>(),
+  // A real schema, not z.custom: this value is attacker-controlled, is stored
+  // as jsonb, and is read back and rendered — including on a published page
+  // served to anonymous visitors. See config-schema.ts.
+  config: widgetConfigSchema,
 });
 
 export async function updateWidgetAction(

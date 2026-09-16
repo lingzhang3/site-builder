@@ -87,3 +87,32 @@ describe("formatCategory", () => {
     assert.equal(formatCategory(null), "—");
   });
 });
+
+describe("formatNumber: currency codes that would crash Intl", () => {
+  // Intl.NumberFormat throws a RangeError on an unrecognized currency. This
+  // runs while rendering a widget, so an unguarded throw would blank a
+  // published dashboard for every visitor. The config schema rejects these on
+  // input; this is the render-time backstop.
+  it("falls back instead of throwing on a bad code", () => {
+    for (const currency of ["NOPE", "USDD", "", "12"]) {
+      assert.doesNotThrow(
+        () => formatNumber(1299, { style: "currency", currency }),
+        `should not throw for ${JSON.stringify(currency)}`,
+      );
+      assert.match(
+        formatNumber(1299, { style: "currency", currency }),
+        /1,299/,
+        "the number must still render",
+      );
+    }
+  });
+
+  it("still honours a valid code", () => {
+    assert.equal(formatNumber(1299, { style: "currency", currency: "EUR" }), "€1,299");
+    assert.equal(formatNumber(1299, { style: "currency", currency: "eur" }), "€1,299");
+  });
+
+  it("does not throw when the code is missing entirely", () => {
+    assert.doesNotThrow(() => formatNumber(1299, { style: "currency" }));
+  });
+});

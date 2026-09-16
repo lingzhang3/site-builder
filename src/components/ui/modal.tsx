@@ -46,7 +46,7 @@ export function Modal({
         if (event.target === ref.current) onClose();
       }}
       className={cn(
-        "m-auto w-[min(32rem,calc(100vw-2rem))] rounded-[--radius-card] border border-border",
+        "m-auto w-[min(32rem,calc(100vw-2rem))] rounded-card border border-border",
         "bg-surface p-0 text-ink backdrop:bg-black/40",
         className,
       )}

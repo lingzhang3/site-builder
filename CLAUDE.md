@@ -33,6 +33,13 @@ database. They are not style preferences.
 5. **Never write to a customer database.** No migrations, no temp tables, no
    `SET` that outlives the transaction.
 
+6. **`widgets.config` is validated with `widgetConfigSchema`, never
+   `z.custom`.** It arrives from a Server Action, is stored as jsonb, and is
+   rendered again — on a published page, to anonymous visitors. A value that
+   throws during render (an unrecognized `format.currency` makes
+   `Intl.NumberFormat` throw a RangeError) blanks the page for everyone until
+   someone edits the config, so `currency.ts` guards the render path too.
+
 ## Charts
 
 `src/lib/widgets/palette.ts` documents a **validated** categorical palette. The
@@ -67,3 +74,9 @@ Unit tests cover the pure, security-critical modules. When you touch
 `guard.ts`, add the bypass you are defending against as a test case — the
 existing ones read as a list of attacks and that is the point. Modules that
 need the database or React are covered by `pnpm test:e2e` instead.
+
+Most of these modules are dependency-free on purpose, so they run on a bare
+checkout. `config-schema.test.ts` is the exception — it imports zod, so it
+needs `pnpm install` first. Prefer the dependency-free side when the logic is
+security-critical: `currency.ts` is split out from the zod schema for exactly
+that reason.

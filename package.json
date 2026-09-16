@@ -26,7 +26,6 @@
     "@uiw/react-codemirror": "^4.23.7",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.44.2",
-    "lucide-react": "^0.468.0",
     "mysql2": "^3.11.5",
     "next": "^15.3.0",
     "next-auth": "5.0.0-beta.25",

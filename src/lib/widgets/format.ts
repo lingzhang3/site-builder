@@ -6,6 +6,7 @@
  * destroys trust in a dashboard faster than a wrong colour ever will.
  */
 
+import { safeCurrency } from "./currency";
 import type { NumberFormat } from "./types";
 
 const DEFAULT_FORMAT: NumberFormat = { style: "plain" };
@@ -35,9 +36,14 @@ export function formatNumber(value: number, format: NumberFormat = DEFAULT_FORMA
 
   switch (format.style) {
     case "currency":
+      // safeCurrency, not `?? "USD"`: an unrecognized code makes
+      // Intl.NumberFormat throw a RangeError, and this runs inside the render
+      // of a widget that may be on a published page. The config schema
+      // rejects bad codes on the way in; this is the second layer, for rows
+      // written before that schema existed or by anything that bypasses it.
       return new Intl.NumberFormat(undefined, {
         style: "currency",
-        currency: format.currency ?? "USD",
+        currency: safeCurrency(format.currency),
         minimumFractionDigits: decimals ?? 0,
         maximumFractionDigits: decimals ?? 0,
       }).format(value);

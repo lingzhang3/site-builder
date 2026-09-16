@@ -113,7 +113,7 @@ export function Field({
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className={cn("rounded-[--radius-card] border border-border bg-surface", className)}>
+    <div className={cn("rounded-card border border-border bg-surface", className)}>
       {children}
     </div>
   );
@@ -153,7 +153,7 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-[--radius-card] border border-dashed border-border px-6 py-12 text-center">
+    <div className="flex flex-col items-center justify-center gap-2 rounded-card border border-dashed border-border px-6 py-12 text-center">
       <p className="text-sm font-medium text-ink">{title}</p>
       {description ? (
         <p className="max-w-sm text-sm text-ink-muted">{description}</p>

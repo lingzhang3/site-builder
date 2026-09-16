@@ -11,6 +11,15 @@ export interface QueryLimits {
   rowLimit: number;
 }
 
+/**
+ * What these readers actually need: a bag of optional strings.
+ *
+ * Not `NodeJS.ProcessEnv` — Next augments that type with a required NODE_ENV,
+ * so a caller passing an explicit subset (a test, or config assembled by hand)
+ * would not typecheck even though every value the function reads is present.
+ */
+export type EnvSource = Record<string, string | undefined>;
+
 const DEFAULT_TIMEOUT_MS = 15_000;
 const MAX_TIMEOUT_MS = 120_000;
 const DEFAULT_ROW_LIMIT = 5_000;
@@ -27,19 +36,19 @@ export function parsePositiveInt(
   return Math.min(parsed, max);
 }
 
-export function getQueryLimits(env: NodeJS.ProcessEnv = process.env): QueryLimits {
+export function getQueryLimits(env: EnvSource = process.env): QueryLimits {
   return {
     timeoutMs: parsePositiveInt(env.QUERY_TIMEOUT_MS, DEFAULT_TIMEOUT_MS, MAX_TIMEOUT_MS),
     rowLimit: parsePositiveInt(env.QUERY_ROW_LIMIT, DEFAULT_ROW_LIMIT, MAX_ROW_LIMIT),
   };
 }
 
-export function getPublicCacheTtlSeconds(env: NodeJS.ProcessEnv = process.env): number {
+export function getPublicCacheTtlSeconds(env: EnvSource = process.env): number {
   // A published link with no cache lets anyone with the URL re-query the
   // customer's database on every page load, so the floor is 1 second.
   return parsePositiveInt(env.PUBLIC_CACHE_TTL_SECONDS, 60, 3600);
 }
 
-export function getPublicRateLimitPerMinute(env: NodeJS.ProcessEnv = process.env): number {
+export function getPublicRateLimitPerMinute(env: EnvSource = process.env): number {
   return parsePositiveInt(env.PUBLIC_RATE_LIMIT_PER_MINUTE, 60, 10_000);
 }
